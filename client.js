@@ -2,6 +2,7 @@ const net = require("net");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const Buffer = require('buffer').Buffer;
 
 const PORT = 3000;
 const HOST = "127.0.0.1";
@@ -10,24 +11,28 @@ let iv;
 const client = net.createConnection(PORT, HOST);
 let clientdh, clientkey;
 
-client.on("connect", function () {
-    console.log("laotie")
-});
-
-// client.on("data", function (data) {
-//    console.log(JSON.parse(JSON.stringify(data)))
-// //   if (data.tid === 1) {
-// //     clientdh = crypto.createDiffieHellman(data.bigPrime, data.gene);
-// //     clientkey = clientdh.generateKeys();
-// //     client.write(clientkey);
-// //     iv = data.iv;
-// //   } else if (data.tid === 2) {
-// //     const clientSecret = clientdh.computeSecret(data.serverkey);
-// //     const deCipheriv = crypto.createDecipheriv("aes-128-gcm", clientSecret, iv);
-// //     const deresult = deCipheriv.update(data.file);
-// //     console.log("客户端：收到服务端数据，内容为{" + deresult + "}");
-// //   }
+// client.on("connect", function () {
+//     console.log("laotie")
 // });
+
+client.on("data", function (data) {
+   data = JSON.parse(data)
+   console.log('the data %d : ',data.tid,data)
+  if (data.tid === 1) {
+    clientdh = crypto.createDiffieHellman(new Uint8Array(data.bigPrime.data), data.gene);
+    clientkey = clientdh.generateKeys();
+    console.log("this is clientkey",clientkey.toJSON())
+    client.write(clientkey);
+    iv = data.iv;
+  } else if (data.tid === 2) {
+    console.log(data.serverkey)
+    const clientSecret = clientdh.computeSecret(data.serverkey,'base64');
+    const deCipheriv = crypto.createDecipheriv("aes-128-gcm", clientSecret, Buffer.from(iv));
+    console.log("data.file",data.file)
+    const deresult = deCipheriv.update(Buffer.from(data.file));
+    console.log("客户端：收到服务端数据，内容为{" + deresult + "}");
+  }
+});
 
 // client.on('close', function(data){
 //     console.log('客户端：连接断开');

@@ -27,19 +27,20 @@ server.on("connection", (socket) => {
           gene:gene,
           iv:iv,
       }
-      socket.write(obj1)
+      socket.write(JSON.stringify(obj1))
   }
   socket.on("data", function (clientkey) {
     console.log("服务端：收到客户端数据，内容为{" + clientkey + "}");
     const serverSecret = serverdh.computeSecret(clientkey);
+    console.log("serverSecret",serverSecret)
     const cipheriv = crypto.createCipheriv("aes-128-gcm", serverSecret, iv);
     const result = cipheriv.update(file, "utf8");
     const obj2 = {
         tid:2,
         file:result,
-        serverkey:serverkey,
+        serverkey:serverkey.toString('base64'),
     }
-    socket.write(obj2);
+    socket.write(JSON.stringify(obj2));
   });
 });
 
