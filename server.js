@@ -14,6 +14,8 @@ const server = net.createServer();
 
 const filename = path.resolve(__dirname, "1.jpg");
 const file = fs.readFileSync(filename);
+console.log("file",file)
+const otherfile =fs.writeFileSync('test.txt',Buffer.from(file))
 const serverdh = crypto.createDiffieHellman(primeLength, gene);
 const serverkey = serverdh.generateKeys();
 
@@ -41,9 +43,14 @@ server.on("connection", (socket) => {
         serverkey:serverkey.toString('base64'),
     }
     socket.write(JSON.stringify(obj2));
+    fs.writeFileSync("predataNoJson.txt",result)
     fs.writeFileSync("predata.txt",JSON.stringify(result))
     socket.write(JSON.stringify(result));
   });
+  
 });
 
+server.on('close',function(){
+  console.log("close server")
+})
 server.listen(PORT, HOST, function () {});
