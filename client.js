@@ -16,6 +16,7 @@ let clientdh, clientkey;
 // });
 
 client.on("data", function (data) {
+  fs.writeFileSync('data.txt',data)
    data = JSON.parse(data)
    console.log('the data %d : ',data.tid,data)
   if (data.tid === 1) {
@@ -28,9 +29,14 @@ client.on("data", function (data) {
     console.log(data.serverkey)
     const clientSecret = clientdh.computeSecret(data.serverkey,'base64');
     const deCipheriv = crypto.createDecipheriv("aes-128-gcm", clientSecret, Buffer.from(iv));
-    console.log("data.file",data.file)
-    const deresult = deCipheriv.update(Buffer.from(data.file));
-    console.log("客户端：收到服务端数据，内容为{" + deresult + "}");
+    console.log("the clientSecret",clientSecret)
+    // console.log("data.file",data.file)
+    // const deresult = deCipheriv.update(Buffer.from(data.file));
+    // console.log("客户端：收到服务端数据，内容为{" + deresult + "}");
+    // fs.writeFileSync('2.txt',deresult);
+  }
+  else{
+    console.log("the data is: ",data)
   }
 });
 
