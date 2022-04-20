@@ -1,0 +1,1 @@
+console.log(Buffer.alloc(1).length)
