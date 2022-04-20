@@ -14,8 +14,6 @@ const server = net.createServer();
 
 const filename = path.resolve(__dirname, "1.jpg");
 const file = fs.readFileSync(filename);
-console.log("file",file)
-const otherfile =fs.writeFileSync('test.txt',Buffer.from(file))
 const serverdh = crypto.createDiffieHellman(primeLength, gene);
 const serverkey = serverdh.generateKeys();
 
@@ -32,9 +30,9 @@ server.on("connection", (socket) => {
       socket.write(JSON.stringify(obj1))
   }
   socket.on("data", function (clientkey) {
-    console.log("服务端：收到客户端数据，内容为{" + clientkey + "}");
+    // console.log("服务端：收到客户端数据，内容为{" + clientkey + "}");
     const serverSecret = serverdh.computeSecret(clientkey);
-    console.log("serverSecret: ",serverSecret)
+    console.log("serverSecret:",serverSecret)
     const cipheriv = crypto.createCipheriv("aes-128-gcm", serverSecret, iv);
     const result = cipheriv.update(file);
     const obj2 = {
@@ -42,10 +40,10 @@ server.on("connection", (socket) => {
         // file:result,
         serverkey:serverkey.toString('base64'),
     }
-    socket.write(JSON.stringify(obj2));
-    fs.writeFileSync("predataNoJson.txt",result)
-    fs.writeFileSync("predata.txt",JSON.stringify(result))
-    socket.write(JSON.stringify(result));
+    socket.write(JSON.stringify(obj2),()=>{
+      socket.write(result);
+    });
+    
   });
   
 });
